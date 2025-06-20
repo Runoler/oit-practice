@@ -35,6 +35,6 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run:
+        run: |
           cd backend-cli-jdbc/
           ./gradlew build sonar --info
