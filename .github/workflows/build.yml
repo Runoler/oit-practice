@@ -7,10 +7,6 @@ on:
       - backend-cli-jdbc-dev
   pull_request:
     types: [opened, synchronize, reopened]
-      branches:
-        - main
-        - backend-cli-jdbc
-        - backend-cli-jdbc-dev
 jobs:
   build:
     name: Build and analyze
