@@ -60,7 +60,7 @@ CREATE TABLE forms_tags (
 	tag_id UUID NOT NULL,
 	PRIMARY KEY (form_id, tag_id),
 	FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
-	FOREIGN KEY (tag_id) REFERENCES tags(id)
+	FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
 CREATE TABLE users_forms (
 	user_id UUID NOT NULL,
