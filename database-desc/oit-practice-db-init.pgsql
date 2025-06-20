@@ -59,7 +59,7 @@ CREATE TABLE forms_tags (
 	form_id UUID NOT NULL,
 	tag_id UUID NOT NULL,
 	PRIMARY KEY (form_id, tag_id),
-	FOREIGN KEY (form_id) REFERENCES forms(id),
+	FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
 	FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 CREATE TABLE users_forms (
@@ -68,7 +68,7 @@ CREATE TABLE users_forms (
 	is_leader BOOLEAN NOT NULL,
 	PRIMARY KEY(user_id, form_id),
 	FOREIGN KEY (user_id) REFERENCES users(id),
-	FOREIGN KEY (form_id) REFERENCES forms(id)
+	FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_user_logs_user_id ON user_logs(user_id);
 CREATE INDEX idx_user_comments_author_id ON user_comments(author_id);
