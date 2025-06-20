@@ -1,7 +1,14 @@
 plugins {
     id("java")
+    id("org.sonarqube") version "6.2.0.5505"
 }
-
+sonar {
+    properties {
+        property("sonar.projectKey", "Runoler_oit-practice")
+        property("sonar.organization", "runoler")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
+}
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
