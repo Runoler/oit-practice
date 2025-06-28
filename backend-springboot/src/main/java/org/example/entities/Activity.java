@@ -1,39 +1,41 @@
 package org.example.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "activity")
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
+@ToString
 public class Activity {
 
     @Getter
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @Getter
-    @Column(name = "activity_name")
+    @Column(name = "activity_name", nullable = false, unique = true)
     private String activityName;
 
-    public Activity(String activityName) {
-        this.id = UUID.randomUUID();
+    private Activity(UUID id, String activityName) {
+        this.id = id;
         this.activityName = activityName;
     }
 
-    public void setActivityName(String activityName) {
-        if (activityName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Activity name cannot be empty.");
+    public static Activity createNewActivity(String activityName) {
+        if (activityName == null || activityName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Activity name cannot be null or empty.");
+        }
+        return new Activity(UUID.randomUUID(), activityName.trim());
+    }
+
+    public void updateActivityName(String activityName) {
+        if (activityName == null || activityName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Activity name cannot be null or empty.");
         }
         this.activityName = activityName;
     }
