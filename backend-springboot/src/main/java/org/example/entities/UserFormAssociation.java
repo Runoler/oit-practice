@@ -1,34 +1,50 @@
 package org.example.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @IdClass(UserFormAssociationId.class)
 @Table(name = "user_form_association")
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
+@ToString
 public class UserFormAssociation {
 
     @Getter
-    @Setter
     @Id
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
     @Getter
-    @Setter
     @Id
     @ManyToOne
-    @JoinColumn(name = "form_id")
+    @JoinColumn(name = "form_id", nullable = false, updatable = false)
     private Form form;
 
     @Getter
-    @Setter
-    @Column(name = "is_leader")
+    @Column(name = "is_leader", nullable = false)
     private boolean isLeader;
+
+    private UserFormAssociation(User user, Form form, boolean isLeader) {
+        this.user = user;
+        this.form = form;
+        this.isLeader = isLeader;
+    }
+
+    public static UserFormAssociation createNewUserFormAssociation(User user, Form form, boolean isLeader) {
+        if (user == null || form == null) {
+            throw new IllegalArgumentException("User or form cannot be null.");
+        }
+        return new UserFormAssociation(user, form, isLeader);
+    }
+
+    public void makeLeader() {
+        this.isLeader = true;
+    }
+
+    public void removeLeader() {
+        this.isLeader = false;
+    }
 }

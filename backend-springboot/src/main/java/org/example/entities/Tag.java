@@ -1,60 +1,42 @@
 package org.example.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tag")
-@AllArgsConstructor
-@NoArgsConstructor
-public class Tag implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
+@ToString
+public class Tag {
 
     @Getter
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @Getter
-    @Setter
-    @Column(name = "tag_name")
+    @Column(name = "tag_name", nullable = false, unique = true)
     private String tagName;
 
-    @ManyToMany
-    private Set<Form> forms = new HashSet<>();
-
-    public Tag(String tagName) {
-        this.id = UUID.randomUUID();
+    private Tag(UUID id, String tagName) {
+        this.id = id;
         this.tagName = tagName;
     }
 
-    public Set<Form> getForms() {
-        return Collections.unmodifiableSet(forms);
+    public static Tag createNewTag(String tagName) {
+        if (tagName == null || tagName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tag name cannot be null or empty.");
+        }
+        return new Tag(UUID.randomUUID(), tagName);
     }
 
-    public void addForm(Form form) {
-        if (form == null) {
-            throw new IllegalArgumentException("Form cannot be null");
+    public void updateTagName(String tagName) {
+        if (tagName == null || tagName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tag name cannot be null or empty.");
         }
-        if (!form.getTags().contains(this)) {
-            throw new IllegalArgumentException("Form must contain this tag.");
-        }
-        this.forms.add(form);
+        this.tagName = tagName;
     }
-
-    public void removeForm(Form form) {
-        if (form == null) {
-            throw new IllegalArgumentException("Form cannot be null");
-        }
-        this.forms.remove(form);
-    }
-
 }

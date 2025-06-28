@@ -1,10 +1,7 @@
 package org.example.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -14,52 +11,65 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "form")
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
+@ToString
 public class Form {
 
     @Getter
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "activity_id")
+    @JoinColumn(name = "activity_id", nullable = false)
     private Activity activity;
 
     @Getter
-    @Setter
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Getter
-    @Setter
-    @Column(name = "form_text")
+    @Column(name = "form_text", nullable = false)
     private String formText;
 
     @Getter
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Getter
-    @Setter
-    @Column(name = "is_complete")
+    @Column(name = "is_complete", nullable = false)
     private boolean isComplete;
 
     @ManyToMany
-    private Set<Tag> tags = new HashSet<>();
+    @JoinTable(
+            name = "form_tags",
+            joinColumns = @JoinColumn(name = "form_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private final Set<Tag> tags = new HashSet<>();
 
     @OneToMany(mappedBy = "form", fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<UserFormAssociation> userFormAssociations = new HashSet<>();
+    private final Set<UserFormAssociation> userFormAssociations = new HashSet<>();
 
-    public Form(Activity activity, String title, String formText) {
-        this.id = UUID.randomUUID();
+    private Form(UUID id, Activity activity, String title, String formText, LocalDateTime createdAt, boolean isComplete) {
+        this.id = id;
         this.activity = activity;
         this.title = title;
         this.formText = formText;
-        this.createdAt = LocalDateTime.now();
-        this.isComplete = false;
+        this.createdAt = createdAt;
+        this.isComplete = isComplete;
+    }
+
+    public static Form createNewForm(Activity activity, String title, String formText) {
+        if (activity == null) {
+            throw new IllegalArgumentException("Activity cannot be null.");
+        }
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Form title cannot be null or empty.");
+        }
+        return new Form(UUID.randomUUID(), activity, title, formText, LocalDateTime.now(), false);
     }
 
     public Set<Tag> getTags() {
@@ -72,39 +82,48 @@ public class Form {
 
     public void addTag(Tag tag) {
         if (tag == null) {
-            throw new IllegalArgumentException("tag cannot be null.");
-        }
-        if (tag.getTagName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Tag name must be non-empty.");
+            throw new IllegalArgumentException("Tag cannot be null.");
         }
         this.tags.add(tag);
-        tag.addForm(this);
     }
 
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
-        tag.removeForm(this);
     }
 
-    public void addUserFormAssociation(UserFormAssociation userFormAssociation) {
+    public void addParticipant(UserFormAssociation userFormAssociation) {
         if (userFormAssociation == null) {
-            throw new IllegalArgumentException("Association cannot be null.");
+            throw new IllegalArgumentException("User cannot be null.");
+        }
+        if (this.userFormAssociations.stream()
+                .anyMatch(a -> a.getUser().equals(userFormAssociation.getUser()))) {
+            throw new IllegalArgumentException("This user already in form.");
         }
         if (!userFormAssociation.getForm().equals(this)) {
-            throw new IllegalArgumentException("Form must contain only associated records.");
+            throw new IllegalArgumentException("This association has wrong form.");
         }
         this.userFormAssociations.add(userFormAssociation);
-        userFormAssociation.setForm(this);
     }
 
-    public void removeUserFormAssociation(UserFormAssociation userFormAssociation) {
-        if (userFormAssociation == null) {
-            throw new IllegalArgumentException("Association cannot be null.");
-        }
-        if (!this.userFormAssociations.contains(userFormAssociation)) {
-            return;
-        }
+    public void removeParticipant(UserFormAssociation userFormAssociation) {
         this.userFormAssociations.remove(userFormAssociation);
-        userFormAssociation.setForm(null);
+    }
+
+    public void updateTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty.");
+        }
+        this.title = title;
+    }
+
+    public void updateFormText(String formText) {
+        if (formText == null || formText.trim().isEmpty()) {
+            throw new IllegalArgumentException("Text cannot be null or empty.");
+        }
+        this.formText = formText;
+    }
+
+    public void completeForm() {
+        this.isComplete = true;
     }
 }
